@@ -9,12 +9,12 @@ variable "resource_group_name_prefix" {
 }
 
 variable "virtual_machine_name" {
-  default     = "KABLAM-0001"
+  default     = "KABLAM0001"
   description = "Name Of the Virtual Machine"
 }
 
 variable "virtual_machine_username" {
-  description = "Name Of the `first user of the Virtual Machine"
+  description = "Name Of the first user of the Virtual Machine"
   default = "chedy"
 }
 
