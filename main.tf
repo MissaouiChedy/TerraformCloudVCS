@@ -20,7 +20,7 @@ resource "azurerm_network_security_rule" "allow-ssh-nsg-rule" {
   destination_port_range      = "22"
   direction                   = "Inbound"
   name                        = "SSH"
-  network_security_group_name = local.nsg_name
+  network_security_group_name = azurerm_network_security_group.main-nsg.name
   priority                    = 300
   protocol                    = "Tcp"
   resource_group_name         = azurerm_resource_group.rg.name
@@ -35,7 +35,7 @@ resource "azurerm_subnet" "main-subnet" {
   address_prefixes     = ["10.0.0.0/24"]
   name                 = "default"
   resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = "${var.virtual_machine_name}-vnet"
+  virtual_network_name = azurerm_virtual_network.main-vnet.name
   depends_on = [
     azurerm_virtual_network.main-vnet,
   ]
