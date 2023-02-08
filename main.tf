@@ -1,7 +1,7 @@
 locals {
-  nsg_name = "${var.virtual_machine_name}-nsg"
-  vnet_name = "${var.virtual_machine_name}-vnet"
-  nic_name = "${var.virtual_machine_name}61"
+  nsg_name       = "${var.virtual_machine_name}-nsg"
+  vnet_name      = "${var.virtual_machine_name}-vnet"
+  nic_name       = "${var.virtual_machine_name}61"
   public_ip_name = "${var.virtual_machine_name}-ip"
 }
 
@@ -113,5 +113,13 @@ resource "azurerm_public_ip" "main-publicip" {
   sku                 = "Standard"
   depends_on = [
     azurerm_resource_group.rg,
+  ]
+}
+
+data "azurerm_virtual_machine" "vms" {
+  name                = var.virtual_machine_name
+  resource_group_name = azurerm_resource_group.rg.name
+  depends_on = [
+    azurerm_linux_virtual_machine.main-vm,
   ]
 }

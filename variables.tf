@@ -15,10 +15,10 @@ variable "virtual_machine_name" {
 
 variable "virtual_machine_username" {
   description = "Name Of the first user of the Virtual Machine"
-  default = "chedy"
+  default     = "chedy"
 }
 
 variable "virtual_machine_password" {
   description = "Password for the virtual Machine User"
-  sensitive = true
+  sensitive   = true
 }
