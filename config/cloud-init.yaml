@@ -1,0 +1,9 @@
+apt_preserve_sources_list: true
+package_update: true
+package_upgrade: ${upgrade_packages}
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg-agent
+  - software-properties-common

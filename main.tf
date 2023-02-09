@@ -25,6 +25,20 @@ resource "azurerm_virtual_network" "vnetss" {
   ]
 }
 
+resource "azurerm_virtual_network" "vnetss2" {
+  for_each = {
+    "net1" = "9"
+    "net2" = "12"
+  }
+  address_space       = ["10.${each.value}.0.0/16"]
+  location            = var.resource_group_location
+  name                = "${local.vnet_name}-${each.key}"
+  resource_group_name = azurerm_resource_group.rg.name
+  depends_on = [
+    azurerm_resource_group.rg,
+  ]
+}
+
 resource "azurerm_network_security_rule" "allow-ssh-nsg-rule" {
   access                      = "Allow"
   destination_address_prefix  = "*"
@@ -51,6 +65,18 @@ resource "azurerm_subnet" "main-subnet" {
     azurerm_virtual_network.vnetss,
   ]
 }
+
+data "template_cloudinit_config" "config" {
+  gzip          = true
+  base64_encode = true
+
+  part {
+    content_type = "text/cloud-config"
+    content      = templatefile("${path.module}/config/cloud-init.yaml", { upgrade_packages = "false" })
+  }
+}
+
+
 resource "azurerm_linux_virtual_machine" "main-vm" {
   admin_password                  = var.virtual_machine_password
   admin_username                  = var.virtual_machine_username
@@ -60,6 +86,7 @@ resource "azurerm_linux_virtual_machine" "main-vm" {
   network_interface_ids           = [azurerm_network_interface.main-nic.id]
   resource_group_name             = azurerm_resource_group.rg.name
   size                            = "Standard_DS1_v2"
+  custom_data                     = data.template_cloudinit_config.config.rendered
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
@@ -74,7 +101,7 @@ resource "azurerm_linux_virtual_machine" "main-vm" {
     azurerm_network_interface.main-nic,
   ]
   provisioner "local-exec" {
-    command     = "Get-Date > completstated.txt"
+    command     = "Get-Date > completed.txt"
     interpreter = ["PowerShell", "-Command"]
   }
 }
