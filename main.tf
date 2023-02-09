@@ -14,6 +14,17 @@ resource "azurerm_resource_group" "rg" {
   name     = random_pet.rg_name.id
 }
 
+resource "azurerm_virtual_network" "vnetss" {
+  count               = 3
+  address_space       = ["10.${count.index}.0.0/16"]
+  location            = var.resource_group_location
+  name                = "${local.vnet_name}-${count.index}"
+  resource_group_name = azurerm_resource_group.rg.name
+  depends_on = [
+    azurerm_resource_group.rg,
+  ]
+}
+
 resource "azurerm_network_security_rule" "allow-ssh-nsg-rule" {
   access                      = "Allow"
   destination_address_prefix  = "*"
@@ -35,9 +46,9 @@ resource "azurerm_subnet" "main-subnet" {
   address_prefixes     = ["10.0.0.0/24"]
   name                 = "default"
   resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.main-vnet.name
+  virtual_network_name = azurerm_virtual_network.vnetss[0].name
   depends_on = [
-    azurerm_virtual_network.main-vnet,
+    azurerm_virtual_network.vnetss,
   ]
 }
 resource "azurerm_linux_virtual_machine" "main-vm" {
@@ -62,17 +73,21 @@ resource "azurerm_linux_virtual_machine" "main-vm" {
   depends_on = [
     azurerm_network_interface.main-nic,
   ]
+  provisioner "local-exec" {
+    command     = "Get-Date > completstated.txt"
+    interpreter = ["PowerShell", "-Command"]
+  }
 }
 
-resource "azurerm_virtual_network" "main-vnet" {
-  address_space       = ["10.0.0.0/16"]
-  location            = var.resource_group_location
-  name                = local.vnet_name
-  resource_group_name = azurerm_resource_group.rg.name
-  depends_on = [
-    azurerm_resource_group.rg,
-  ]
-}
+# resource "azurerm_virtual_network" "main-vnet" {
+#   address_space       = ["10.0.0.0/16"]
+#   location            = var.resource_group_location
+#   name                = local.vnet_name
+#   resource_group_name = azurerm_resource_group.rg.name
+#   depends_on = [
+#     azurerm_resource_group.rg,
+#   ]
+# }
 resource "azurerm_network_interface_security_group_association" "main-nsg-nic-association" {
   network_interface_id      = azurerm_network_interface.main-nic.id
   network_security_group_id = azurerm_network_security_group.main-nsg.id
