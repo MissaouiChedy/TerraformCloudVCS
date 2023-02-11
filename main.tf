@@ -14,30 +14,40 @@ resource "azurerm_resource_group" "rg" {
   name     = random_pet.rg_name.id
 }
 
-resource "azurerm_virtual_network" "vnetss" {
-  count               = 3
-  address_space       = ["10.${count.index}.0.0/16"]
-  location            = var.resource_group_location
-  name                = "${local.vnet_name}-${count.index}"
-  resource_group_name = azurerm_resource_group.rg.name
+# resource "azurerm_virtual_network" "vnetss" {
+#   count               = 3
+#   address_space       = ["10.${count.index}.0.0/16"]
+#   location            = var.resource_group_location
+#   name                = "${local.vnet_name}-${count.index}"
+#   resource_group_name = azurerm_resource_group.rg.name
+#   depends_on = [
+#     azurerm_resource_group.rg,
+#   ]
+# }
+
+# resource "azurerm_virtual_network" "vnetss2" {
+#   for_each = {
+#     "net1" = "9"
+#     "net2" = "12"
+#   }
+#   address_space       = ["10.${each.value}.0.0/16"]
+#   location            = var.resource_group_location
+#   name                = "${local.vnet_name}-${each.key}"
+#   resource_group_name = azurerm_resource_group.rg.name
+#   depends_on = [
+#     azurerm_resource_group.rg,
+#   ]
+# }
+
+module "Vnetz" {
+  source                  = "./Vnetz"
+  resource_group_location = var.resource_group_location
+  resource_group_name     = azurerm_resource_group.rg.name
   depends_on = [
-    azurerm_resource_group.rg,
+    azurerm_resource_group.rg
   ]
 }
 
-resource "azurerm_virtual_network" "vnetss2" {
-  for_each = {
-    "net1" = "9"
-    "net2" = "12"
-  }
-  address_space       = ["10.${each.value}.0.0/16"]
-  location            = var.resource_group_location
-  name                = "${local.vnet_name}-${each.key}"
-  resource_group_name = azurerm_resource_group.rg.name
-  depends_on = [
-    azurerm_resource_group.rg,
-  ]
-}
 
 resource "azurerm_network_security_rule" "allow-ssh-nsg-rule" {
   access                      = "Allow"
@@ -60,9 +70,9 @@ resource "azurerm_subnet" "main-subnet" {
   address_prefixes     = ["10.0.0.0/24"]
   name                 = "default"
   resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.vnetss[0].name
+  virtual_network_name = module.Vnetz.vnet_name
   depends_on = [
-    azurerm_virtual_network.vnetss,
+    module.Vnetz,
   ]
 }
 
@@ -72,7 +82,7 @@ data "template_cloudinit_config" "config" {
 
   part {
     content_type = "text/cloud-config"
-    content      = templatefile("${path.module}/config/cloud-init.yaml", { upgrade_packages = "false" })
+    content      = templatefile("${path.module}/config/cloud-init.yaml", { upgrade_packages = "true" })
   }
 }
 
