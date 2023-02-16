@@ -3,10 +3,11 @@ locals {
   vnet_name      = "${var.virtual_machine_name}-vnet"
   nic_name       = "${var.virtual_machine_name}61"
   public_ip_name = "${var.virtual_machine_name}-ip"
+  rg_prefix      = "${var.resource_group_name_prefix}-${terraform.workspace}"
 }
 
 resource "random_pet" "rg_name" {
-  prefix = var.resource_group_name_prefix
+  prefix = local.rg_prefix
 }
 
 resource "azurerm_resource_group" "rg" {
@@ -173,5 +174,25 @@ data "azurerm_virtual_machine" "vms" {
   resource_group_name = azurerm_resource_group.rg.name
   depends_on = [
     azurerm_linux_virtual_machine.main-vm,
+  ]
+}
+
+resource "azurerm_virtual_network" "festusvnetss" {
+  address_space       = ["10.0.0.0/16"]
+  location            = var.resource_group_location
+  name                = "FestusVNet"
+  resource_group_name = azurerm_resource_group.rg.name
+  depends_on = [
+    azurerm_resource_group.rg,
+  ]
+}
+
+resource "azurerm_subnet" "festusmain-subnet" {
+  address_prefixes     = ["10.0.0.0/24"]
+  name                 = "default"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.festusvnetss.name
+  depends_on = [
+    azurerm_virtual_network.festusvnetss,
   ]
 }
