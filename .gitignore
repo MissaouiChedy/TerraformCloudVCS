@@ -34,3 +34,5 @@ override.tf.json
 terraform.rc
 
 completed.txt
+
+sp.json

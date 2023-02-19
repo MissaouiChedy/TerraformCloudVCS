@@ -111,10 +111,10 @@ resource "azurerm_linux_virtual_machine" "main-vm" {
   depends_on = [
     azurerm_network_interface.main-nic,
   ]
-  provisioner "local-exec" {
-    command     = "Get-Date > completed.txt"
-    interpreter = ["PowerShell", "-Command"]
-  }
+  # provisioner "local-exec" {
+  #   command     = "Get-Date > completed.txt"
+  #   interpreter = ["PowerShell", "-Command"]
+  # }
 }
 
 # resource "azurerm_virtual_network" "main-vnet" {

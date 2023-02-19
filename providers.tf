@@ -14,6 +14,13 @@ terraform {
       version = "2.2.0"
     }
   }
+  cloud {
+    organization = "OrgOfChedy"
+
+    workspaces {
+      name = "upp-vmm-westeurope-dev"
+    }
+  }
 }
 
 provider "azurerm" {
